@@ -13,38 +13,24 @@ public class CSVReader {
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
-        int i = 0;
-              
-        //Input query
-        System.out.println("Input a query : ");
-        Scanner sc = new Scanner(System.in);
-        String s = sc.nextLine();
+        int i = 0,j = 0,k = 0,l = 0,tableIdx=0;
+        String table = null;
+        String[][] col = new String[2][];
+        String[] colQuery = new String[4] ;
+        boolean from, on, join, star = false;
         
-        //Convert ';' --> ' ;'
-        String inputan = s.replace(";", " ;");
-        
-        //Split query berdasarkan spasi
-        String[] pisahSpasi = inputan.split(" ");
-        
-        //Cek split
-        for(i = 0; i < pisahSpasi.length; i++){
-            System.out.println(pisahSpasi[i]);
-        }
-        
-        //Baca file CSV
         try {
-            br = new BufferedReader(new FileReader(csvFile));
-            while ((line = br.readLine()) != null) {
-
-                // use comma as separator
-                String[] col = line.split(cvsSplitBy);
+            br = new BufferedReader(new FileReader(csvFile)); //Membuka file CSV
+            while ((line = br.readLine()) != null) { //Selama isi CSV masih ada looping baca file CSV
+                col[i]  = line.split(cvsSplitBy);  //Memisah kata memakai spasi dan memasukkan ke array
                 System.out.print("Tabel : ");
-                System.out.println(col[0]);
+                System.out.println(col[i][0]);
                 System.out.print("List Kolom : ");
-                for (i = 1; i < col.length; i++) {
-                    System.out.print(col[i]+",");
+                for (j = 1; j < col[i].length; j++) {
+                    System.out.print(col[i][j]+",");
                 }
                 System.out.println("");
+                i++;
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -60,35 +46,86 @@ public class CSVReader {
             }
         }
         
+        
+        //Input query
+        System.out.println("Input a query : ");
+        Scanner baca = new Scanner(System.in);
+        String input = baca.nextLine();
+        
+        //Convert ';' --> ' ;'
+        String titikKoma = input.replace(";", " ;");
+        
+        //Split query berdasarkan spasi
+        String[] query = titikKoma.split(" ");
+        
+        //Cek split
+//        for(i = 0; i < query.length; i++){
+//            System.out.println(query[i]);
+//        }
+        
         //Cek query SELECT diawal query
-        if(pisahSpasi[0].equalsIgnoreCase("SELECT")){
+        if(query[0].equalsIgnoreCase("SELECT")){
             //Cek semicolon di akhir query
-            if(pisahSpasi[pisahSpasi.length - 1].equals(";")){
+            if(query[query.length - 1].equals(";")){
                 //Cek query FROM
-                if(pisahSpasi[2].equalsIgnoreCase("FROM")){
-                    // ---- Insert syntax untuk query SELECT FROM below ---- 
-                    
-                    //Cek ada query JOIN
-                    for(i = 3; i<pisahSpasi.length; i++){
-                        if(pisahSpasi[i].equalsIgnoreCase("JOIN")){
-                            //Cek ada kata ON atau USING
-                            for(i = 6; i < pisahSpasi.length; i++){
-                                if(pisahSpasi[i].equalsIgnoreCase("ON") || pisahSpasi[i].equalsIgnoreCase("USING")){
-                                    // ---- Insert syntax untuk query JOIN ON / USING below ----
-                                } else {
-                                    System.out.println("SQL Error (Syntax Error)");
-                                }   
+                for (j = 0; j < query.length; j++){
+                    if(query[j].equalsIgnoreCase("FROM")){
+                        // ---- Insert syntax untuk query SELECT FROM below ---- 
+                        from = true;
+                        i = 0;
+                        table = query[j+1];
+                        if ("buku".equalsIgnoreCase(query[j+1])) {
+                            tableIdx = 0;
+                        } else if ("penulis".equalsIgnoreCase(query[j+1])) {
+                            tableIdx = 1;
+                        } else {
+                            System.out.println("no table exist");
+                        }
+
+                        if ("*".equalsIgnoreCase(query[j])) { //Mengecek kata "*"
+                            star = true;
+                            for (i = 0;  i<2 ; i++) {
+                                if (table.equalsIgnoreCase(col[i][0])) {
+                                    l = 0;
+                                    for (int m = 1; m < col[i].length; m++) {
+                                        colQuery[l]=col[i][m]; 
+                                        l++;
+                                    }
+                                }
                             }
+                        } else {
+                            colQuery = query[1].split(","); //Jika tidak ada bintang maka memasukkan kolom sesuai query
                         }
                     }
-                } else {
+                }
+                if(from = false){
                     System.out.println("SQL Error (Syntax Error)");
                 }
-            } else {
-                System.out.println("SQL Error (Missing ;)");
+                
+                //Cek ada query JOIN
+                for(i = 3; i<query.length; i++){
+                    if(query[i].equalsIgnoreCase("JOIN")){
+                        // ---- Insert syntax untuk query JOIN FROM below ----
+                        join  = true;
+                        //Cek ada kata ON atau USING
+                        for(i = 6; i < query.length; i++){
+                            if(query[i].equalsIgnoreCase("ON") || query[i].equalsIgnoreCase("USING")){
+                                // ---- Insert syntax untuk query JOIN ON / USING below ----
+                            } else {
+                                System.out.println("SQL Error (Syntax Error)");
+                            }   
+                        }
+                    }
+                }
             }
+            System.out.println("Hasil Query : ");
+            System.out.println("Tabel : "+col[tableIdx][0]);
+            System.out.print("Kolom : ");
+            for (int m = 0; m < colQuery.length; m++) {
+                System.out.print(colQuery[m]+" ");
+            }    
         } else {
-            System.out.println("SQL Error (Syntax Error)");
+            System.out.println("SQL Error (Missing ;)");
         }
-    }   
+    }
 }
