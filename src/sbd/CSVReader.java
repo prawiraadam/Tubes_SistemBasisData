@@ -81,23 +81,25 @@ public class CSVReader {
                         } else {
                             System.out.println("no table exist");
                         }
-
-                        if ("*".equalsIgnoreCase(query[j])) { //Mengecek kata "*"
-                            star = true;
-                            for (i = 0;  i<2 ; i++) {
-                                if (table.equalsIgnoreCase(col[i][0])) {
-                                    l = 0;
-                                    for (int m = 1; m < col[i].length; m++) {
-                                        colQuery[l]=col[i][m]; 
-                                        l++;
-                                    }
-                                }
-                            }
-                        } else {
-                            colQuery = query[1].split(","); //Jika tidak ada bintang maka memasukkan kolom sesuai query
-                        }
+                    }
+                    if ("*".equalsIgnoreCase(query[j])) { //Mengecek kata "*"
+                        star = true;
                     }
                 }
+                if (star) { //Jika ada bintang maka memasukkan semua kolom dari tabel
+                    for (i = 0;  i<2 ; i++) {
+                        if (table.equalsIgnoreCase(col[i][0])) {
+                            l=0;
+                            for (int m = 1; m < col[i].length; m++) {
+                                colQuery[l] = col[i][m]; 
+                                l++;
+                            }
+                        }
+                    }
+                } else {
+                    colQuery = query[1].split(","); //Jika tidak ada bintang maka memasukkan kolom sesuai query
+                }
+                
                 if(from = false){
                     System.out.println("SQL Error (Syntax Error)");
                 }
