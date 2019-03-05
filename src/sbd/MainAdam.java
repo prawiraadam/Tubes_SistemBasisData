@@ -13,10 +13,11 @@ public class MainAdam {
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
-        int i = 0,j = 0,k = 0,l = 0,tableIdx=0;
+        int i = 0,j = 0,k = 0,l = 0,tableIdx=0,joinIdx=0;
         String table = null;
         String[][] col = new String[2][];
         String[] colQuery = new String[4] ;
+        String[] tableJoin = new String[1];
         boolean from, on, join, star = false;
         
         try {
@@ -53,14 +54,14 @@ public class MainAdam {
         String input = baca.nextLine();
         
         //Convert ';' --> ' ;'
-        String titikKoma = input.replace(";", " ;");
+        String titikKoma = input.replace(";", " ; ");
         
         //Split query berdasarkan spasi
         String[] query = titikKoma.split(" ");
         
         //Cek split
 //        for(i = 0; i < query.length; i++){
-//            System.out.println(query[i]);
+//           System.out.println(query[i]);
 //        }
         
         //Cek query SELECT diawal query
@@ -78,40 +79,53 @@ public class MainAdam {
                             tableIdx = 0;
                         } else if ("penulis".equalsIgnoreCase(query[j+1])) {
                             tableIdx = 1;
-                        } else {
+                        } else if ("penerbit".equalsIgnoreCase(query[j+1])) {
+                            tableIdx = 2;
+                        }  
+                        else {
                             System.out.println("no table exist");
                         }
 
                         if ("*".equalsIgnoreCase(query[j])) { //Mengecek kata "*"
                             star = true;
-                            for (i = 0;  i<2 ; i++) {
+                            
+                            }
+                        } else {
+                            colQuery = query[1].split(","); //Jika tidak ada bintang maka memasukkan kolom sesuai query
+                        }
+                    }
+                if (star) { //jika ada bintang memasukkan semua atribut tabel
+                    for (i = 0;  i<3 ; i++) {
                                 if (table.equalsIgnoreCase(col[i][0])) {
                                     l = 0;
                                     for (int m = 1; m < col[i].length; m++) {
                                         colQuery[l]=col[i][m]; 
                                         l++;
                                     }
+                                } else if (i==3) {
+                                    System.out.println("no table exist");
                                 }
-                            }
-                        } else {
+                    }  
+                }
+                else { 
                             colQuery = query[1].split(","); //Jika tidak ada bintang maka memasukkan kolom sesuai query
                         }
-                    }
-                }
                 if(from = false){
                     System.out.println("SQL Error (Syntax Error)");
                 }
                 
                 //Cek ada query JOIN
-                for(i = 3; i<query.length; i++){
+                for(i = 0; i<query.length; i++){
                     if(query[i].equalsIgnoreCase("JOIN")){
                         // ---- Insert syntax untuk query JOIN FROM below ----
                         join  = true;
+                        joinIdx = i+1;
                         //Cek ada kata ON atau USING
-                        for(i = 6; i < query.length; i++){
+                        for(i = 0; i < query.length; i++){
                             if(query[i].equalsIgnoreCase("ON") || query[i].equalsIgnoreCase("USING")){
                                 // ---- Insert syntax untuk query JOIN ON / USING below ----
-                            } else {
+                                tableJoin = query[joinIdx].split(","); //memasukkan nama table yang di join ke array
+                            } else if(!join){
                                 System.out.println("SQL Error (Syntax Error)");
                             }   
                         }
@@ -120,6 +134,11 @@ public class MainAdam {
             }
             System.out.println("Hasil Query : ");
             System.out.println("Tabel : "+col[tableIdx][0]);
+            if (joinIdx!=0) {
+                for (int m = 0; m < tableJoin.length; m++) {
+                    System.out.println("Tabel "+(m+2)+" : "+tableJoin[m]);
+                }
+            }
             System.out.print("Kolom : ");
             for (int m = 0; m < colQuery.length; m++) {
                 System.out.print(colQuery[m]+" ");

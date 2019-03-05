@@ -13,11 +13,12 @@ public class CSVReader {
         BufferedReader br = null;
         String line = "";
         String cvsSplitBy = ",";
-        int i = 0,j = 0,k = 0,l = 0,tableIdx=0;
+        int i = 0,j = 0,k = 0,l = 0,tableIdx=0,joinIdx=0;
         String table = null;
         String[][] col = new String[2][];
         String[] colQuery = new String[4] ;
-        boolean from, on, join, star, error = false;
+        String[] tableJoin = new String[1];
+        boolean from, onusing = false, join = false, star, error = false;
         
         try {
             br = new BufferedReader(new FileReader(csvFile)); //Membuka file CSV
@@ -47,6 +48,7 @@ public class CSVReader {
         }
                
         //Input query
+        System.out.println("");
         System.out.println("Input a query : ");
         Scanner baca = new Scanner(System.in);
         String input = baca.nextLine();
@@ -104,16 +106,20 @@ public class CSVReader {
                     if(query[i].equalsIgnoreCase("JOIN")){
                         // ---- Insert syntax untuk query JOIN FROM below ----
                         join  = true;
+                        joinIdx = i+1;
                         //Cek ada kata ON atau USING
                         for(i = 6; i < query.length; i++){
                             if(query[i].equalsIgnoreCase("ON") || query[i].equalsIgnoreCase("USING")){
                                 // ---- Insert syntax untuk query JOIN ON / USING below ----
-                            } else {
-                                System.out.println("SQL Error (Syntax Error)");
-                                error = true;
+                                onusing = true;
+                                tableJoin = query[joinIdx].split(","); //memasukkan nama table yang di join ke array
                             }   
                         }
                     }
+                }
+                if(onusing == false || (join == false && onusing == true)){
+                    error = true;
+                    System.out.println("SQL Error (Syntax error)");
                 }
             } else {
                 System.out.println("SQL Error (Missing ;)");
@@ -125,9 +131,15 @@ public class CSVReader {
         }
         
         //Jika query tidak ada error samasekali, output tabel & kolom
+        System.out.println("");
         if (error == false){
             System.out.println("Hasil Query : ");
             System.out.println("Tabel : "+col[tableIdx][0]);
+            if (joinIdx!=0) {
+                for (int m = 0; m < tableJoin.length; m++) {
+                    System.out.println("Tabel "+(m+2)+" : "+tableJoin[m]);
+                }
+            }
             System.out.print("Kolom : ");
             for (int m = 0; m < colQuery.length; m++) {
                 System.out.print(colQuery[m]+" ");
