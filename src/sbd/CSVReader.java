@@ -17,7 +17,7 @@ public class CSVReader {
         String table = null;
         String[][] col = new String[2][];
         String[] colQuery = new String[4] ;
-        boolean from, on, join, star = false;
+        boolean from, on, join, star, error = false;
         
         try {
             br = new BufferedReader(new FileReader(csvFile)); //Membuka file CSV
@@ -45,8 +45,7 @@ public class CSVReader {
                 }
             }
         }
-        
-        
+               
         //Input query
         System.out.println("Input a query : ");
         Scanner baca = new Scanner(System.in);
@@ -67,41 +66,37 @@ public class CSVReader {
         if(query[0].equalsIgnoreCase("SELECT")){
             //Cek semicolon di akhir query
             if(query[query.length - 1].equals(";")){
-                //Cek query FROM
-                for (j = 0; j < query.length; j++){
-                    if(query[j].equalsIgnoreCase("FROM")){
-                        // ---- Insert syntax untuk query SELECT FROM below ---- 
-                        from = true;
-                        i = 0;
-                        table = query[j+1];
-                        if ("buku".equalsIgnoreCase(query[j+1])) {
-                            tableIdx = 0;
-                        } else if ("penulis".equalsIgnoreCase(query[j+1])) {
-                            tableIdx = 1;
-                        } else {
-                            System.out.println("no table exist");
-                        }
-                    }
-                    if ("*".equalsIgnoreCase(query[j])) { //Mengecek kata "*"
+                //Cek query FROM                   
+                if(query[2].equalsIgnoreCase("FROM")){
+                    // ---- Insert syntax untuk query SELECT FROM below ---- 
+                    from = true;
+                    i = 0;
+                    table = query[3];
+                    if ("buku".equalsIgnoreCase(query[3])) {
+                        tableIdx = 0;
+                    } else if ("penulis".equalsIgnoreCase(query[3])) {
+                        tableIdx = 1;
+                    } else {
+                        System.out.println("SQL Error (No such table exist)");
+                        error = true;
+                    }   
+                    if (query[1].equals("*")) { //Jika ada bintang maka memasukkan semua kolom dari tabel
                         star = true;
-                    }
-                }
-                if (star) { //Jika ada bintang maka memasukkan semua kolom dari tabel
-                    for (i = 0;  i<2 ; i++) {
-                        if (table.equalsIgnoreCase(col[i][0])) {
-                            l=0;
-                            for (int m = 1; m < col[i].length; m++) {
-                                colQuery[l] = col[i][m]; 
-                                l++;
+                        for (i = 0;  i<2 ; i++) {
+                            if (table.equalsIgnoreCase(col[i][0])) {
+                                l=0;
+                                for (int m = 1; m < col[i].length; m++) {
+                                    colQuery[l] = col[i][m]; 
+                                    l++;
+                                }
                             }
                         }
+                    } else {
+                        colQuery = query[1].split(","); //Jika tidak ada bintang maka memasukkan kolom sesuai query
                     }
                 } else {
-                    colQuery = query[1].split(","); //Jika tidak ada bintang maka memasukkan kolom sesuai query
-                }
-                
-                if(from = false){
                     System.out.println("SQL Error (Syntax Error)");
+                    error = true;
                 }
                 
                 //Cek ada query JOIN
@@ -115,19 +110,28 @@ public class CSVReader {
                                 // ---- Insert syntax untuk query JOIN ON / USING below ----
                             } else {
                                 System.out.println("SQL Error (Syntax Error)");
+                                error = true;
                             }   
                         }
                     }
                 }
-            }
+            } else {
+                System.out.println("SQL Error (Missing ;)");
+                error = true;
+            }    
+        } else {
+            System.out.println("SQL Error (Syntax error)");
+            error = true;
+        }
+        
+        //Jika query tidak ada error samasekali, output tabel & kolom
+        if (error == false){
             System.out.println("Hasil Query : ");
             System.out.println("Tabel : "+col[tableIdx][0]);
             System.out.print("Kolom : ");
             for (int m = 0; m < colQuery.length; m++) {
                 System.out.print(colQuery[m]+" ");
-            }    
-        } else {
-            System.out.println("SQL Error (Missing ;)");
+            }
         }
     }
 }
