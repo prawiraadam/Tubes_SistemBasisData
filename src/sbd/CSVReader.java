@@ -96,31 +96,32 @@ public class CSVReader {
                     } else {
                         colQuery = query[1].split(","); //Jika tidak ada bintang maka memasukkan kolom sesuai query
                     }
-                } else {
-                    System.out.println("SQL Error (Syntax Error)");
-                    error = true;
-                }
-                
-                //Cek ada query JOIN
-                for(i = 3; i<query.length; i++){
-                    if(query[i].equalsIgnoreCase("JOIN")){
-                        // ---- Insert syntax untuk query JOIN FROM below ----
-                        join  = true;
-                        joinIdx = i+1;
-                        //Cek ada kata ON atau USING
-                        for(i = 6; i < query.length; i++){
-                            if(query[i].equalsIgnoreCase("ON") || query[i].equalsIgnoreCase("USING")){
-                                // ---- Insert syntax untuk query JOIN ON / USING below ----
-                                onusing = true;
-                                tableJoin = query[joinIdx].split(","); //memasukkan nama table yang di join ke array
-                            }   
+                    //Cek ada join atau tidak
+                    for(i = 3; i<query.length; i++){
+                        if(query[i].equalsIgnoreCase("JOIN")){
+                            // ---- Insert syntax untuk query JOIN FROM below ----
+                            join  = true;
+                            joinIdx = i+1;
+                            //Cek ada kata ON atau USING
+                            for(i = 6; i < query.length; i++){
+                                if(query[i].equalsIgnoreCase("ON") || query[i].equalsIgnoreCase("USING")){
+                                    // ---- Insert syntax untuk query JOIN ON / USING below ----
+                                    onusing = true;
+                                    tableJoin = query[joinIdx].split(","); //memasukkan nama table yang di join ke array
+                                }   
+                            }
                         }
                     }
-                }
-                if(onusing == false || (join == false && onusing == true)){
-                    error = true;
-                    System.out.println("SQL Error (Syntax error)");
-                }
+                    if((join == true && onusing == false) || (join == false && onusing == true)){
+                        error = true;
+                        System.out.println("SQL Error (Syntax error)");
+                        System.out.println("join on using");
+                    }
+
+                    } else {
+                        System.out.println("SQL Error (Syntax Error)");
+                        error = true;
+                    }
             } else {
                 System.out.println("SQL Error (Missing ;)");
                 error = true;
