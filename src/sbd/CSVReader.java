@@ -7,6 +7,55 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class CSVReader {
+    public boolean basicQueryCheck(String[] query, String[][] tabel){
+        //Fungsi akan RETURN nilai TRUE jika ada error
+        int i;
+        boolean found = false;
+        
+        //Memeriksa semicolon
+        if(query[query.length - 1].equals(";")){
+            //Memeriksa perintah SELECT
+            if(query[0].equalsIgnoreCase("SELECT")){
+                //Memeriksa perintah FROM
+                if(query[2].equalsIgnoreCase("FROM")){
+                    //Memeriksa apakah tabel yang dimaksud terdaftar
+                    for(i = 0; i<=1; i++){
+                        if(query[3].equalsIgnoreCase(tabel[i][0])){
+                            found = true;
+                        }
+                    } 
+                    if (found != true){
+                        System.out.println("No table exist");
+                        return true; //Error
+                    }
+                } else {
+                    System.out.println("SQL Error (Syntax error)");
+                    return true; //Error
+                } 
+            } else {
+                System.out.println("SQL Error (Syntax error)");
+                return true; //Error
+            }
+        } else {
+            System.out.println("SQL Error (Missing ;)");
+            return true; //Error
+        }
+        
+        //Memeriksa apakah kolom yang dimaksud terdaftar
+        if(query[1].equals("*")){
+            return false;
+        } else {
+            String[] colQuery = query[1].split(",");
+            for(int j = 0; j<colQuery.length-1; j++){
+                if(tabel[i][j] != colQuery[j]){
+                    return true; //Error
+                }
+            }
+            return false;
+        }
+    }
+    
+    
     
     public static void main(String[] args) {
         String csvFile = "Tabel Entity.csv";
@@ -15,11 +64,12 @@ public class CSVReader {
         String cvsSplitBy = ",";
         int i = 0,j = 0,k = 0,l = 0,tableIdx=0,joinIdx=0;
         String table = null;
-        String[][] col = new String[2][];
-        String[] colQuery = new String[4] ;
+        String[][] col = new String[3][];
+        String[] colQuery = new String[4];
         String[] tableJoin = new String[1];
-        boolean from, onusing = false, join = false, star, error = false;
+        boolean from, on = false, join = false, star, error = false;
         
+        //Membaca file .CSV
         try {
             br = new BufferedReader(new FileReader(csvFile)); //Membuka file CSV
             while ((line = br.readLine()) != null) { //Selama isi CSV masih ada looping baca file CSV
@@ -78,13 +128,15 @@ public class CSVReader {
                         tableIdx = 0;
                     } else if ("penulis".equalsIgnoreCase(query[3])) {
                         tableIdx = 1;
+                    } else if ("menulis".equalsIgnoreCase(query[3])) {
+                        tableIdx = 2;
                     } else {
                         System.out.println("SQL Error (No such table exist)");
                         error = true;
                     }   
-                    if (query[1].equals("*")) { //Jika ada bintang maka memasukkan semua kolom dari tabel
+                    if(query[1].equals("*")) { //Jika ada bintang maka memasukkan semua kolom dari tabel
                         star = true;
-                        for (i = 0;  i<2 ; i++) {
+                        for (i = 0; i<3 ; i++) {
                             if (table.equalsIgnoreCase(col[i][0])) {
                                 l=0;
                                 for (int m = 1; m < col[i].length; m++) {
@@ -97,25 +149,53 @@ public class CSVReader {
                         colQuery = query[1].split(","); //Jika tidak ada bintang maka memasukkan kolom sesuai query
                     }
                     //Cek ada join atau tidak
-                    for(i = 3; i<query.length; i++){
-                        if(query[i].equalsIgnoreCase("JOIN")){
+                    i = 0;
+                    while(!query[i].equalsIgnoreCase("JOIN")){
+                       if(query[i].equalsIgnoreCase("JOIN")){
                             // ---- Insert syntax untuk query JOIN FROM below ----
                             join  = true;
                             joinIdx = i+1;
                             //Cek ada kata ON atau USING
                             for(i = 6; i < query.length; i++){
-                                if(query[i].equalsIgnoreCase("ON") || query[i].equalsIgnoreCase("USING")){
+                                if(query[i].equalsIgnoreCase("USING") || query[i].equalsIgnoreCase("ON")){
                                     // ---- Insert syntax untuk query JOIN ON / USING below ----
-                                    onusing = true;
+                                    on = true;
                                     tableJoin = query[joinIdx].split(","); //memasukkan nama table yang di join ke array
                                 }   
                             }
                         }
+                        int indexTabelJoin = i + 1;
+                        if((query[indexTabelJoin].equalsIgnoreCase("Penulis")) || (query[indexTabelJoin].equalsIgnoreCase("buku"))){
+                            error = true;
+                            System.out.println("SQL Error (Invalid table for join)");
+                        }
+                        i++;
                     }
-                    if((join == true && onusing == false) || (join == false && onusing == true)){
+                      //Old code
+//                    for(i = 3; i<query.length; i++){
+//                        if(query[i].equalsIgnoreCase("JOIN")){
+//                            // ---- Insert syntax untuk query JOIN FROM below ----
+//                            join  = true;
+//                            joinIdx = i+1;
+//                            //Cek ada kata ON atau USING
+//                            for(i = 6; i < query.length; i++){
+//                                if(query[i].equalsIgnoreCase("USING") || query[i].equalsIgnoreCase("ON")){
+//                                    // ---- Insert syntax untuk query JOIN ON / USING below ----
+//                                    on = true;
+//                                    tableJoin = query[joinIdx].split(","); //memasukkan nama table yang di join ke array
+//                                }   
+//                            }    
+////                            for(i = 0; i < tableJoin.length-1;i++){
+////                                if(tableJoin[i].equalsIgnoreCase(col[]))
+////                                for(j = 0; j < col[i].length; j++){
+////                     
+////                                }
+////                            } 
+//                        }
+//                    }
+                    if((join == true && on == false) || (join == false && on == true)){
                         error = true;
-                        System.out.println("SQL Error (Syntax error)");
-                        System.out.println("join on using");
+                        System.out.println("SQL Error (JOIN Error)");
                     }
 
                     } else {
@@ -131,7 +211,7 @@ public class CSVReader {
             error = true;
         }
         
-        //Jika query tidak ada error samasekali, output tabel & kolom
+        //Jika query tidak ada error, output tabel & kolom
         System.out.println("");
         if (error == false){
             System.out.println("Hasil Query : ");

@@ -1,2 +1,3 @@
-Buku,idBuku,judulBuku,tahunTerbit,namaPenulis
-Penulis,idPenulis,namaPenulis,usia,judulBuku
+Buku,idBuku,judulBuku,tahunTerbit,ISBN
+Penulis,idPenulis,namaPenulis,usia,asal
+Menulis,idBuku,idPenulis
